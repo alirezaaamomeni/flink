@@ -34,7 +34,7 @@ func handleRequests(r *mux.Router, h *handler) {
 	if adr == "" {
 		adr = ":8080"
 	}
-	a := fmt.Sprintf(":", adr)
+	a := fmt.Sprintf(":%s", adr)
 	log.Fatal(http.ListenAndServe(a, r))
 }
 
