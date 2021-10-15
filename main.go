@@ -34,8 +34,8 @@ func handleRequests(r *mux.Router, h *handler) {
 	if adr == "" {
 		adr = ":8080"
 	}
-	fmt.Sprintf(":", adr)
-	log.Fatal(http.ListenAndServe(":", r))
+	a := fmt.Sprintf(":", adr)
+	log.Fatal(http.ListenAndServe(a, r))
 }
 
 func (h *handler) addHistory(w http.ResponseWriter, r *http.Request){
