@@ -2,15 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 )
 
-const TTL = 60 * time.Second
+var TTL = 60 * time.Second
 
 type location struct {
 	lat float64 `json:"lat"`
@@ -28,7 +30,12 @@ func handleRequests(r *mux.Router, h *handler) {
 	sub.HandleFunc("/{id}/now", h.addHistory).Methods("POST")
 	sub.HandleFunc("/{id}", h.getHistory).Methods("GET")
 	sub.HandleFunc("/{id}", h.deleteHistory).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":10000", r))
+	adr := os.Getenv("HISTORY_SERVER_LISTEN_ADDR")
+	if adr == "" {
+		adr = ":8080"
+	}
+	fmt.Sprintf(":", adr)
+	log.Fatal(http.ListenAndServe(":", r))
 }
 
 func (h *handler) addHistory(w http.ResponseWriter, r *http.Request){
@@ -91,6 +98,10 @@ func (h *handler) getHistory(w http.ResponseWriter, r *http.Request){
 
 
 func main() {
+	ttl := os.Getenv("LOCATION_HISTORY_TTL_SECONDS")
+	if ttl != "" {
+		TTL, _ = time.ParseDuration(os.Getenv("LOCATION_HISTORY_TTL_SECONDS"))
+	}
 	history := make(map[string][]location)
 	h := handler{history: history}
 	r := mux.NewRouter()
