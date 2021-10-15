@@ -15,8 +15,8 @@ import (
 var TTL = 60 * time.Second
 
 type location struct {
-	lat float64 `json:"lat"`
-	lng float64 `json:"lng"`
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
 	createTime time.Time `json:"-"`
 }
 
@@ -32,7 +32,7 @@ func handleRequests(r *mux.Router, h *handler) {
 	sub.HandleFunc("/{id}", h.deleteHistory).Methods("DELETE")
 	adr := os.Getenv("HISTORY_SERVER_LISTEN_ADDR")
 	if adr == "" {
-		adr = ":8080"
+		adr = "8080"
 	}
 	a := fmt.Sprintf(":%s", adr)
 	log.Fatal(http.ListenAndServe(a, r))
@@ -41,10 +41,11 @@ func handleRequests(r *mux.Router, h *handler) {
 func (h *handler) addHistory(w http.ResponseWriter, r *http.Request){
 	id := mux.Vars(r)["id"]
 
-	loc := &location{}
-	if err := json.NewDecoder(r.Body).Decode(loc); err != nil {
+	loc := location{}
+	if err := json.NewDecoder(r.Body).Decode(&loc); err != nil {
 		http.Error(w, "Error in deserialize the request", http.StatusBadRequest)
 	}
+	fmt.Println(loc)
 	loc.createTime = time.Now()
 
 	if h.history[id] == nil {
@@ -52,7 +53,7 @@ func (h *handler) addHistory(w http.ResponseWriter, r *http.Request){
 	}
 	h.l.Lock()
 	defer h.l.Unlock()
-	h.history[id] = append(h.history[id], *loc)
+	h.history[id] = append(h.history[id], loc)
 }
 
 func (h *handler) deleteHistory(w http.ResponseWriter, r *http.Request){
